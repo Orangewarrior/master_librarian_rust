@@ -152,6 +152,61 @@ It is especially useful for:
 - auditing legacy stacks
 
 ---
+🔍 How this differs from other vulnerability scanners
+
+Tools such as Trivy, Grype, and similar scanners operate using a fundamentally different model.
+
+🧱 Traditional scanners (Trivy, Grype, osv-scanner)
+
+These tools typically:
+
+analyze:
+containers
+filesystems
+SBOMs
+package manager databases (apt, rpm, npm, etc.)
+rely on:
+pre-built vulnerability databases
+package metadata (not runtime resolution)
+
+👉 They do NOT inspect native libraries via pkg-config.
+
+🔥 Master Librarian approach
+
+This tool takes a different path:
+
+uses pkg-config to enumerate real, installed native libraries
+extracts:
+actual linked libraries (-l)
+include paths
+resolved versions
+queries the NVD API in real time
+correlates vulnerabilities directly with:
+system-level C/C++ dependencies
+⚠️ Why this matters
+
+Many environments rely heavily on:
+
+system libraries
+manually compiled dependencies
+non-package-managed software
+
+In these cases:
+
+traditional scanners may miss exposure
+dependencies resolved at runtime may not appear in SBOMs
+
+🧠 Summary
+Feature	Master Librarian	Trivy / Grype
+pkg-config integration	✅	❌
+native C/C++ libs discovery	✅	❌
+SBOM-based scanning	❌	✅
+container scanning	❌	✅
+runtime system introspection	✅	❌
+
+💡 Positioning
+
+Master Librarian is best understood as a native library introspection tool with vulnerability correlation, rather than a traditional vulnerability scanner.
 
 ## ⚠️ Limitations
 
