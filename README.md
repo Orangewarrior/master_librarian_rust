@@ -1,10 +1,8 @@
-![Crates.io](https://img.shields.io/crates/v/master_librarian_rust)
-![Downloads](https://img.shields.io/crates/d/master_librarian_rust)
-![License](https://img.shields.io/crates/l/master_librarian_rust)
-![Rust Version](https://img.shields.io/badge/rust-1.75%2B-orange)
-![Build](https://img.shields.io/github/actions/workflow/status/Orangewarrior/master_librarian_rust/ci.yml)
-![Last Commit](https://img.shields.io/github/last-commit/Orangewarrior/master_librarian_rust)
-![Repo Size](https://img.shields.io/github/repo-size/Orangewarrior/master_librarian_rust)
+![Rust](https://img.shields.io/badge/language-Rust-orange)
+![Security](https://img.shields.io/badge/focus-AppSec-red)
+![Unsafe](https://img.shields.io/badge/unsafe-none-success)
+![pkg-config](https://img.shields.io/badge/integration-pkg--config-blue)
+![NVD](https://img.shields.io/badge/data-NVD-critical)
 
 # 📚 Librarian audit 
 
