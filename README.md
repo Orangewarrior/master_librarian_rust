@@ -96,17 +96,35 @@ cargo build --release
 
 ---
 
-### Run (CSV output)
+### Run (TXT|JSON|CSV output)
 
 ```bash
-./target/release/master_librarian_rust   --type csv   --limit 20   --csv-output report.csv
+./target/release/master_librarian_rust --type txt --limit 10 --threads 8 --rate-limit-ms 250
+./target/release/master_librarian_rust --type json --limit 10 --threads 8 --rate-limit-ms 250 --json-output report.json
+./target/release/master_librarian_rust --type csv --limit 10 --threads 8 --rate-limit-ms 250 --csv-output report.csv
 ```
 
 ---
 
 ## 📌 Example Output
 
-```text
+```textMaster Librarian v0.4
+Tool to search public vulnerabilities on local libraries
+by Orangewarrior
+Output mode: text
+Limit per package: 10
+Worker threads: 8
+Rate limit: 250 ms
+
+
+systemd 249 (version 249)
+	CVE: CVE-2026-29111
+	URL: https://nvd.nist.gov/vuln/detail/CVE-2026-29111
+	Date: 2026-03-23T22:16:26.267
+	Description: systemd, a system and service manager, (as PID 1) hits an assert and freezes execution when an unprivileged IPC API call is made with spurious data. On version v249 and older the effect is not an assert, but stack overwriting, with the attacker controlled content. From version v250 and newer this is not possible as the safety check causes an assert instead. This IPC call was added in v239, so versions older than that are not affected. Versions 260-rc1, 259.2, 258.5, and 257.11 contain patches. No known workarounds are available.
+	Severity V2: NULL
+	Severity V3: MEDIUM
+
 ssl 3.5.4 (version 3.5.4) [libs: ssl, crypto]
 
     CVE: CVE-2015-3455
