@@ -21,7 +21,7 @@ It provides:
 - 📦 system-wide library discovery
 - 🔎 CVE correlation via NVD
 - 🎨 colored severity output (terminal)
-- 📊 structured CSV export
+- 📊 structured CSV and JSON export
 - 🛡️ hardened Rust implementation (no unsafe, input validation)
 
 ---
