@@ -56,7 +56,7 @@ It provides:
 
 ---
 
-### 📊 CSV Export
+### 📊 CSV and JSON Export
 
 - RFC-compliant CSV (via `csv` crate)
 - Safe escaping
