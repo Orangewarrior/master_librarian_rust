@@ -105,6 +105,8 @@ This design allows the tool to be both:
 ### Build
 
 ```bash
+git clone https://github.com/Orangewarrior/master_librarian_rust
+cd master_librarian_rust
 cargo build --release
 ```
 
