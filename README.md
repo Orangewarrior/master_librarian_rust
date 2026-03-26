@@ -4,7 +4,7 @@
 ![pkg-config](https://img.shields.io/badge/integration-pkg--config-blue)
 ![NVD](https://img.shields.io/badge/data-NVD-critical)
 
-# 📚 Librarian audit 
+# 📚 Master librarian 
 
 A low-level, security-focused tool to enumerate system libraries via pkg-config and correlate them with public vulnerabilities (CVE) from the NVD.
 
