@@ -22,7 +22,7 @@ impl NvdClient {
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         headers.insert(
             USER_AGENT,
-            HeaderValue::from_static("Master_librarian_rust/0.3 (+https://example.invalid)"),
+            HeaderValue::from_static("master-librarian-rust/0.4 (+https://example.invalid)"),
         );
 
         let client = Client::builder()
@@ -45,7 +45,10 @@ impl NvdClient {
         let response = self
             .client
             .get("https://services.nvd.nist.gov/rest/json/cves/2.0")
-            .query(&[("keywordSearch", keyword), ("resultsPerPage", &results_per_page.to_string())])
+            .query(&[
+                ("keywordSearch", keyword),
+                ("resultsPerPage", &results_per_page.to_string()),
+            ])
             .send()
             .with_context(|| format!("failed to query NVD for keyword '{keyword}'"))?
             .error_for_status()

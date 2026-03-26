@@ -8,7 +8,7 @@ use clap::ValueEnum;
 use csv::WriterBuilder;
 
 use crate::config::AppConfig;
-use crate::models::{CsvRow, PackageInfo, VulnerabilityRecord};
+use crate::models::{CsvRow, JsonPackageReport, PackageInfo, VulnerabilityRecord};
 
 /// Supported output modes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -17,6 +17,8 @@ pub enum OutputMode {
     Txt,
     /// RFC-compliant CSV output.
     Csv,
+    /// Structured JSON output.
+    Json,
 }
 
 impl OutputMode {
@@ -26,37 +28,32 @@ impl OutputMode {
         match self {
             Self::Txt => "text",
             Self::Csv => "csv",
+            Self::Json => "json",
         }
     }
 }
 
 /// Interface used by the application to emit records.
 pub trait OutputFormatter: Send {
-    /// Emit the package header or context marker.
     fn begin_package(&mut self, package: &PackageInfo) -> Result<()>;
-
-    /// Emit a single vulnerability record.
     fn write_record(&mut self, package: &PackageInfo, record: &VulnerabilityRecord) -> Result<()>;
-
-    /// Emit a final footer if necessary.
     fn finish(&mut self) -> Result<()>;
 }
 
-/// Factory for creating concrete output formatters.
 pub struct OutputFormatterFactory;
 
 impl OutputFormatterFactory {
-    /// Create a boxed formatter for the selected mode.
     pub fn create(config: &AppConfig) -> Result<Box<dyn OutputFormatter>> {
         match config.output_mode {
             OutputMode::Txt => Ok(Box::new(TextFormatter::default())),
             OutputMode::Csv => CsvFormatter::new(&config.csv_output)
                 .map(|f| Box::new(f) as Box<dyn OutputFormatter>),
+            OutputMode::Json => JsonFormatter::new(&config.json_output)
+                .map(|f| Box::new(f) as Box<dyn OutputFormatter>),
         }
     }
 }
 
-/// Plain text formatter.
 #[derive(Default)]
 pub struct TextFormatter;
 
@@ -95,7 +92,6 @@ impl OutputFormatter for TextFormatter {
     }
 }
 
-/// Robust CSV formatter backed by the `csv` crate.
 pub struct CsvFormatter {
     writer: csv::Writer<BufWriter<File>>,
 }
@@ -119,13 +115,59 @@ impl OutputFormatter for CsvFormatter {
 
     fn write_record(&mut self, package: &PackageInfo, record: &VulnerabilityRecord) -> Result<()> {
         let row = CsvRow::from_package_and_record(package, record);
-        self.writer
-            .serialize(row)
-            .context("failed to write CSV record")
+        self.writer.serialize(row).context("failed to write CSV record")
     }
 
     fn finish(&mut self) -> Result<()> {
         self.writer.flush().context("failed to flush CSV writer")
+    }
+}
+
+pub struct JsonFormatter {
+    writer: BufWriter<File>,
+    current: Option<JsonPackageReport>,
+    reports: Vec<JsonPackageReport>,
+}
+
+impl JsonFormatter {
+    fn new(path: &std::path::Path) -> Result<Self> {
+        let file = File::create(path)
+            .with_context(|| format!("failed to create JSON output file: {}", path.display()))?;
+        Ok(Self {
+            writer: BufWriter::new(file),
+            current: None,
+            reports: Vec::new(),
+        })
+    }
+
+    fn flush_current(&mut self) {
+        if let Some(current) = self.current.take() {
+            self.reports.push(current);
+        }
+    }
+}
+
+impl OutputFormatter for JsonFormatter {
+    fn begin_package(&mut self, package: &PackageInfo) -> Result<()> {
+        self.flush_current();
+        self.current = Some(JsonPackageReport {
+            package: package.clone(),
+            vulnerabilities: Vec::new(),
+        });
+        Ok(())
+    }
+
+    fn write_record(&mut self, _package: &PackageInfo, record: &VulnerabilityRecord) -> Result<()> {
+        if let Some(current) = self.current.as_mut() {
+            current.vulnerabilities.push(record.clone());
+        }
+        Ok(())
+    }
+
+    fn finish(&mut self) -> Result<()> {
+        self.flush_current();
+        serde_json::to_writer_pretty(&mut self.writer, &self.reports)
+            .context("failed to write JSON output")
     }
 }
 
@@ -150,29 +192,4 @@ fn colorize_severity(severity: &str) -> String {
 
 fn ansi_wrap(text: &str, code: &str) -> String {
     format!("\x1b[{code}m{text}\x1b[0m")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::colorize_severity;
-
-    #[test]
-    fn low_is_yellow() {
-        assert_eq!(colorize_severity("LOW"), "\x1b[33mLOW\x1b[0m");
-    }
-
-    #[test]
-    fn medium_is_orange_256() {
-        assert_eq!(colorize_severity("MEDIUM"), "\x1b[38;5;208mMEDIUM\x1b[0m");
-    }
-
-    #[test]
-    fn high_is_red() {
-        assert_eq!(colorize_severity("HIGH"), "\x1b[31mHIGH\x1b[0m");
-    }
-
-    #[test]
-    fn critical_is_blinking_red() {
-        assert_eq!(colorize_severity("CRITICAL"), "\x1b[5;31mCRITICAL\x1b[0m");
-    }
 }

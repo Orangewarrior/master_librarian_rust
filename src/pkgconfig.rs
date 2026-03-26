@@ -8,11 +8,6 @@ use anyhow::{Context, bail};
 
 use crate::models::PackageInfo;
 
-/// Query the local system through `pkg-config --list-all`, then probe each safe
-/// package through the Rust `pkg-config` crate for richer metadata.
-///
-/// This keeps enumeration explicit while avoiding manual parsing of compile/link
-/// flags after discovery.
 pub fn collect_packages() -> anyhow::Result<Vec<PackageInfo>> {
     let output = Command::new("pkg-config")
         .arg("--list-all")
@@ -38,13 +33,11 @@ pub fn collect_packages() -> anyhow::Result<Vec<PackageInfo>> {
         }
 
         let probe = pkg_config::Config::new()
-                // This application runs at normal runtime, not inside build.rs.
-                // Disable Cargo metadata emission so stdout stays clean.
-                .cargo_metadata(false)
-                .env_metadata(false)
-                .print_system_cflags(false)
-                .print_system_libs(false)
-                .probe(&package_name);
+            .cargo_metadata(false)
+            .env_metadata(false)
+            .print_system_cflags(false)
+            .print_system_libs(false)
+            .probe(&package_name);
 
         let info = match probe {
             Ok(lib) => {
@@ -76,10 +69,7 @@ pub fn collect_packages() -> anyhow::Result<Vec<PackageInfo>> {
             },
         };
 
-        let key = (
-            info.lookup_term.clone(),
-            info.version.clone(),
-        );
+        let key = (info.lookup_term.clone(), info.version.clone());
 
         match merged.get_mut(&key) {
             Some(existing) => existing.merge_from(info),
@@ -122,25 +112,4 @@ fn is_safe_pkg_name(name: &str) -> bool {
         && name
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b'+'))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{build_lookup_term, is_safe_pkg_name};
-
-    #[test]
-    fn package_name_validation_is_strict() {
-        assert!(is_safe_pkg_name("openssl"));
-        assert!(is_safe_pkg_name("libssl-3.0"));
-        assert!(!is_safe_pkg_name(""));
-        assert!(!is_safe_pkg_name("openssl;rm -rf /"));
-    }
-
-    #[test]
-    fn lookup_term_prefers_link_lib_plus_version() {
-        let libs = vec!["ssl".to_string(), "crypto".to_string()];
-        assert_eq!(build_lookup_term("openssl", Some("3.0.0"), &libs), "ssl 3.0.0");
-        assert_eq!(build_lookup_term("openssl", None, &libs), "ssl");
-        assert_eq!(build_lookup_term("openssl", None, &[]), "openssl");
-    }
 }

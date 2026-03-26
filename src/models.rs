@@ -3,7 +3,7 @@
 use serde::Serialize;
 
 /// Parsed vulnerability information returned by the NVD client.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
 pub struct VulnerabilityRecord {
     /// CVE identifier.
     pub cve_id: String,
@@ -19,9 +19,8 @@ pub struct VulnerabilityRecord {
     pub severity_v3: Option<String>,
 }
 
-
 /// Metadata collected for one local pkg-config package.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct PackageInfo {
     /// Canonical package token reported by `pkg-config --list-all`.
     pub package_name: String,
@@ -47,7 +46,6 @@ impl PackageInfo {
         }
     }
 
-
     /// Return the linked library list in a stable display format.
     #[must_use]
     pub fn libs_display(&self) -> String {
@@ -68,6 +66,18 @@ impl PackageInfo {
         }
     }
 
+    /// Return search tokens used for local relevance filtering.
+    #[must_use]
+    pub fn relevance_tokens(&self) -> Vec<String> {
+        let mut tokens = vec![self.package_name.clone()];
+        tokens.extend(self.libs.iter().cloned());
+
+        tokens.retain(|t| !t.trim().is_empty());
+        tokens.sort();
+        tokens.dedup();
+        tokens
+    }
+
     /// Merge alias metadata from another package that resolves to the same
     /// lookup term.
     pub fn merge_from(&mut self, other: Self) {
@@ -86,8 +96,6 @@ impl PackageInfo {
 }
 
 /// Serialized CSV output row.
-///
-/// Using a dedicated row type keeps formatting deterministic and easier to audit.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CsvRow {
     pub package_name: String,
@@ -121,4 +129,11 @@ impl CsvRow {
             description: record.description.clone(),
         }
     }
+}
+
+/// Structured JSON report for one package.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct JsonPackageReport {
+    pub package: PackageInfo,
+    pub vulnerabilities: Vec<VulnerabilityRecord>,
 }

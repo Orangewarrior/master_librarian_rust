@@ -12,8 +12,14 @@ pub struct AppConfig {
     pub output_mode: OutputMode,
     /// Maximum number of vulnerability records requested per package.
     pub limit: NonZeroUsize,
-    /// Optional CSV output path.
+    /// Output path used when CSV mode is selected.
     pub csv_output: PathBuf,
+    /// Output path used when JSON mode is selected.
+    pub json_output: PathBuf,
+    /// Number of parallel workers for remote requests.
+    pub thread_count: NonZeroUsize,
+    /// Global minimum delay between requests in milliseconds.
+    pub rate_limit_ms: u64,
 }
 
 /// Builder for [`AppConfig`].
@@ -22,6 +28,9 @@ pub struct AppConfigBuilder {
     output_mode: Option<OutputMode>,
     limit: Option<usize>,
     csv_output: Option<PathBuf>,
+    json_output: Option<PathBuf>,
+    thread_count: Option<usize>,
+    rate_limit_ms: Option<u64>,
 }
 
 impl AppConfigBuilder {
@@ -52,22 +61,50 @@ impl AppConfigBuilder {
         self
     }
 
+    /// Set the JSON output path.
+    #[must_use]
+    pub fn json_output<P: Into<PathBuf>>(mut self, json_output: P) -> Self {
+        self.json_output = Some(json_output.into());
+        self
+    }
+
+    /// Set the rayon thread count.
+    #[must_use]
+    pub fn thread_count(mut self, thread_count: usize) -> Self {
+        self.thread_count = Some(thread_count);
+        self
+    }
+
+    /// Set the global request delay.
+    #[must_use]
+    pub fn rate_limit_ms(mut self, rate_limit_ms: u64) -> Self {
+        self.rate_limit_ms = Some(rate_limit_ms);
+        self
+    }
+
     /// Validate and build the final configuration.
     pub fn build(self) -> anyhow::Result<AppConfig> {
         let output_mode = self
             .output_mode
             .ok_or_else(|| anyhow::anyhow!("missing output mode"))?;
-        let limit = self.limit.unwrap_or(3);
-        let limit = NonZeroUsize::new(limit)
+        let limit = NonZeroUsize::new(self.limit.unwrap_or(10))
             .ok_or_else(|| anyhow::anyhow!("limit must be greater than zero"))?;
+        let thread_count = NonZeroUsize::new(self.thread_count.unwrap_or(4))
+            .ok_or_else(|| anyhow::anyhow!("thread count must be greater than zero"))?;
         let csv_output = self
             .csv_output
             .unwrap_or_else(|| PathBuf::from("librarian_log.csv"));
+        let json_output = self
+            .json_output
+            .unwrap_or_else(|| PathBuf::from("librarian_log.json"));
 
         Ok(AppConfig {
             output_mode,
             limit,
             csv_output,
+            json_output,
+            thread_count,
+            rate_limit_ms: self.rate_limit_ms.unwrap_or(250),
         })
     }
 }

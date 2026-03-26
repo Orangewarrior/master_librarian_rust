@@ -22,6 +22,9 @@ impl GetoptFactory for ClapGetoptFactory {
             .output_mode(cli.output_mode)
             .limit(cli.limit)
             .csv_output(cli.csv_output)
+            .json_output(cli.json_output)
+            .thread_count(cli.thread_count)
+            .rate_limit_ms(cli.rate_limit_ms)
             .build()
     }
 }
