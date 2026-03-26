@@ -89,7 +89,7 @@ This design allows the tool to be both:
 - **fast** on larger systems
 - **controlled** in environments where request pacing matters
 
-- 
+  
 ### 🔐 Security Design
 
 - strict input validation (pkg names)
