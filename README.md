@@ -267,7 +267,9 @@ In these cases:
 
 - depends on `pkg-config`
 - relies on keyword matching (not perfect)
-- requires internet access (NVD API)
+- package naming in native ecosystems is often inconsistent
+- internet access is required for live NVD queries
+- parallel requests should be tuned carefully with `--threads` and `--rate-limit-ms`
 
 ---
 
