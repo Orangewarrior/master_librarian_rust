@@ -20,11 +20,13 @@ It provides:
 
 - 📦 system-wide library discovery
 - 🔎 CVE correlation via NVD
-- 🎨 colored severity output (terminal)
-- 📊 structured CSV and JSON export
 - 🛡️ hardened Rust implementation (no unsafe, input validation)
-
----
+- ⚡ parallel NVD queries with configurable thread pool
+- 🧪 improved false-positive reduction in CVE matching
+- 🕒 rate-limited requests for cleaner API usage
+- 🧾 JSON export for machine-readable processing
+- 🎨 colored severity output (terminal)
+- 📊 structured CSV export
 
 ## ⚙️ Features
 
@@ -37,6 +39,7 @@ It provides:
 - deduplicates aliases and overlaps
 
 ---
+
 
 ### 🧬 Vulnerability Correlation
 - Queries the **NVD (National Vulnerability Database)**
@@ -67,7 +70,26 @@ It provides:
   - description
 
 ---
+## ⚡ Concurrency and rate control
 
+Master Librarian uses a parallel request model to improve scanning speed while still allowing conservative request pacing.
+
+### Parallelism
+- powered by **Rayon**
+- configurable with `--threads`
+- useful when scanning many local libraries
+
+### Rate limiting
+- configurable with `--rate-limit-ms`
+- helps avoid aggressive request bursts
+- useful for more stable NVD querying behavior
+
+This design allows the tool to be both:
+
+- **fast** on larger systems
+- **controlled** in environments where request pacing matters
+
+- 
 ### 🔐 Security Design
 
 - strict input validation (pkg names)
