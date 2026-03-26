@@ -9,7 +9,7 @@ use crate::formatter::OutputMode;
 /// Raw CLI structure parsed by clap.
 #[derive(Debug, Parser)]
 #[command(
-    name = "master-librarian-rust",
+    name = "master_librarian_rust",
     about = "Search public vulnerabilities related to local pkg-config packages"
 )]
 pub struct RawCli {

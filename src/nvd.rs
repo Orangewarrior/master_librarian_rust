@@ -22,7 +22,7 @@ impl NvdClient {
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         headers.insert(
             USER_AGENT,
-            HeaderValue::from_static("librarian-audit-rust/0.3 (+https://example.invalid)"),
+            HeaderValue::from_static("Master_librarian_rust/0.3 (+https://example.invalid)"),
         );
 
         let client = Client::builder()

@@ -110,7 +110,7 @@ fn dedup_records(records: &mut Vec<VulnerabilityRecord>) {
 }
 
 fn print_banner(config: &AppConfig) {
-    println!("Librarian audit v0.3 ");
+    println!("Master Librarian v0.3 ");
     println!("Tool to search public vulnerabilities on local libraries");
     println!("by Orangewarrior");
     println!("Output mode: {}", config.output_mode.as_str());
