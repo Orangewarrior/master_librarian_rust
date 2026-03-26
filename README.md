@@ -132,7 +132,8 @@ cargo build --release
 
 ## 📌 Example Output
 
-```textMaster Librarian v0.4
+```text
+Master Librarian v0.4
 Tool to search public vulnerabilities on local libraries
 by Orangewarrior
 Output mode: text
