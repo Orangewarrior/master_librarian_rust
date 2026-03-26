@@ -2,7 +2,7 @@
 name = "master_librarian_rust"
 version = "0.4.0"
 edition = "2021"
-description = "Rust rewrite of Master Librarian with factory-based CLI parsing, builder-based assembly, pkg-config crate integration, deduplicated results and robust CSV output"
+description = "Native library vulnerability scanner using pkg-config + NVD"
 license = "GPL-3.0-or-later"
 
 [dependencies]
